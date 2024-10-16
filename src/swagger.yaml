@@ -1,0 +1,210 @@
+openapi: 3.0.0
+info:
+  title: MCQ Platform API
+  version: 1.0.0
+  description: API for managing MCQ platforms, events, and user interactions
+
+servers:
+  - url: http://localhost:3000/api
+
+paths:
+  /admin/fetchEvents:
+    get:
+      summary: Get all "mcq" tagged events from EMS
+      tags:
+        - admin
+
+  /admin/upload:
+    post:
+      summary: Upload CSV for an event
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                eventId:
+                  type: integer
+
+  /admin/leaderboard/event/{emsEventId}:
+    get:
+      summary: Get leaderboard for an EMS event
+      tags:
+        - admin
+      parameters:
+        - name: emsEventId
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /admin/leaderboard/slots:
+    get:
+      summary: Get leaderboard for specific slots
+      tags:
+        - admin
+      parameters:
+        - name: slotIds
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+
+  /u/user/login:
+    post:
+      summary: User login
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+
+  /e/event/list:
+    get:
+      summary: List events for a user
+      tags:
+        - event
+      parameters:
+        - name: user.id
+          in: query
+          required: true
+          schema:
+            type: integer
+
+  /t/test/createtest/{userId}/questions/{eventId}:
+    post:
+      summary: Create a test with random questions
+      tags:
+        - test
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+
+  /q/question/update/{questionId}:
+    patch:
+      summary: Update a question answer
+      tags:
+        - question
+      parameters:
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                test_id:
+                  type: integer
+                answer:
+                  type: object
+                  properties:
+                    selectedOption:
+                      type: integer
+                    reviewStatus:
+                      type: boolean
+                    submitStatus:
+                      type: boolean
+
+  /t/test/submitTest/{testId}:
+    post:
+      summary: Submit a test
+      tags:
+        - test
+      parameters:
+        - name: testId
+          in: path
+          required: true
+          schema:
+            type: integer
+
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    Leaderboard:
+      type: object
+      properties:
+        rankings:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+              score:
+                type: number
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+
+    Test:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        eventId:
+          type: integer
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        correctOption:
+          type: integer

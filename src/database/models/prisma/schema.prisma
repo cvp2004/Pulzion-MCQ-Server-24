@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://Shrush_owner:t4fDRUP5wYNd@ep-polished-math-a1sfqe6z.ap-southeast-1.aws.neon.tech/Shrush?sslmode=require"
+}
+
+model User {
+  id         Int          @id @default(autoincrement())
+  email      String       @unique
+  password   String
+  firstName  String?
+  lastName   String?
+  tests      Test[]
+  userTokens UserToken[]
+  userEvents User_Event[]
+}
+
+model EmsEvent {
+  id            Int     @id @default(autoincrement())
+  name          String
+  imageUrl      String?
+  emsEventId    Int     @unique
+  rules         String?
+  noOfQuestions Int     @default(30)
+
+  events    Event[]
+  questions Question[]
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  emsEventId  Int       
+  emsSlotId   String?   @unique
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+
+  emsEvent EmsEvent @relation(fields: [emsEventId], references: [emsEventId])
+
+  tests        Test[]
+  userEvents   User_Event[]
+  TestQuestion TestQuestion[]
+  Test_Result  Test_Result[]
+}
+
+model Test {
+  id          Int            @id @default(autoincrement())
+  userId      Int
+  eventId     Int
+  startTime   DateTime
+  endTime     DateTime
+  startedAt   DateTime?
+  submittedAt DateTime?
+  questions   TestQuestion[]
+  testResult  Test_Result?
+  userEvents  User_Event[]
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+}
+
+model Question {
+  id            Int      @id @default(autoincrement())
+  statement     String
+  options       String[]
+  code          String?
+  imageUrl      String?
+  correctOption Int
+  emsEventId    Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+
+  emsEvent      EmsEvent       @relation(fields: [emsEventId], references: [emsEventId])
+  testQuestions TestQuestion[]
+}
+
+model TestQuestion {
+  id             Int      @id @default(autoincrement())
+  eventId        Int
+  testId         Int
+  questionId     Int
+  selectedOption Int?
+  reviewStatus   Boolean?
+  submitStatus   Boolean?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+
+  test     Test     @relation(fields: [testId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+  event    Event    @relation(fields: [eventId], references: [id])
+}
+
+model User_Event {
+  id       Int     @id @default(autoincrement())
+  userId   Int
+  eventId  Int
+  testId   Int     @unique
+  resultId Int     @unique
+  started  Boolean @default(false)
+  finished Boolean @default(false)
+
+  user   User        @relation(fields: [userId], references: [id])
+  event  Event       @relation(fields: [eventId], references: [id])
+  test   Test        @relation(fields: [testId], references: [id])
+  result Test_Result @relation(fields: [resultId], references: [id])
+}
+
+model Test_Result {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  testId    Int      @unique
+  score     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  test       Test        @relation(fields: [testId], references: [id])
+  event      Event       @relation(fields: [eventId], references: [id])
+  User_Event User_Event?
+}
+
+model UserToken {
+  id        Int      @id @default(autoincrement())
+  token     String
+  isValid   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  userId    Int
+
+  user User @relation(fields: [userId], references: [id])
+}
