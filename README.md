@@ -53,6 +53,14 @@ The MCQ platform allows administrators to create and manage MCQ tests associated
 - When questions are fetched for a test, they are cached to improve performance.
 - Individual user responses are also cached.
 - Cached responses are entered into the database through batch processing to optimize database operations.
+- 
+## Worker Threads
+
+The platform uses **Worker Threads** to handle computationally intensive tasks, such as:
+
+- **Leaderboard generation**: Worker threads are employed to handle the sorting and aggregation required to generate leaderboards, ensuring that these operations do not block the main application flow.
+
+Worker threads allow the platform to process large volumes of data concurrently, ensuring a scalable and efficient system, especially under high user load.
 
 ## Setup and Installation
 
